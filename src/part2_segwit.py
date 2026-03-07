@@ -24,7 +24,6 @@ class setup_response:
         self.message = message
         self.data = data
 
-
 # Setup function for wallets and addresses
 def setup_wallet_addresses(rpc)-> setup_response:
     print("Setting up wallet and addresses")
@@ -67,13 +66,14 @@ def setup_wallet_addresses(rpc)-> setup_response:
         }
     )
 
+
+
 # Response class for funding function
 class funding_response:
     def __init__(self, success, message, data):
         self.success=success
         self.message=message
         self.data=data
-        
         
 # Funding function for address A
 def fund_wallet(wallet_rpc, address_A)-> funding_response:
@@ -94,8 +94,87 @@ def fund_wallet(wallet_rpc, address_A)-> funding_response:
         return funding_response(False,"RPC request error", {})
     return funding_response(True, "Funding succesful",utxos)
 
+# Response class for Transaction
+class transaction_response:
+    def __init__(self, success, message, data):
+        self.success = success
+        self.message = message
+        self.data = data
+
+
+# Creating transaction from A to B
+def create_transaction_A_to_B(wallet_rpc, address_A, address_B) -> transaction_response:
+    try:
+        utxos_A = wallet_rpc.listunspent(1, 9999999, [address_A])
+
+        if not utxos_A:
+            return transaction_response(False, "No UTXOs available for address A", {})
+
+        utxo = utxos_A[0]
+
+        send_amount = 1.0
+        fee = 0.0001
+        change_amount = float(utxo["amount"]) - send_amount - fee
+
+        inputs = [
+            {
+                "txid": utxo["txid"],
+                "vout": utxo["vout"]
+            }
+        ]
+
+        if change_amount > 0.0001:
+            outputs = {
+                address_B: send_amount,
+                address_A: round(change_amount, 8)
+            }
+        else:
+            outputs = {
+                address_B: send_amount
+            }
+
+        raw_tx = wallet_rpc.createrawtransaction(inputs, outputs)
+
+        decoded_tx = wallet_rpc.decoderawtransaction(raw_tx)
+
+        signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx)
+
+        if not signed_tx or not signed_tx.get("complete", False):
+            return transaction_response(False, "Transaction signing failed", {})
+
+        txid = wallet_rpc.sendrawtransaction(signed_tx["hex"])
+
+        wallet_rpc.generatetoaddress(1, address_A)
+
+        try:
+            confirmed_tx = wallet_rpc.getrawtransaction(txid, True)
+        except JSONRPCException:
+            tx_details = wallet_rpc.gettransaction(txid)
+            confirmed_tx = wallet_rpc.decoderawtransaction(tx_details["hex"])
+
+        transaction_data = {
+            "txid": txid,
+            "from": address_A,
+            "to": address_B,
+            "amount": send_amount,
+            "fee": fee,
+            "unsigned_tx": decoded_tx,
+            "signed_tx": signed_tx,
+            "confirmed_tx": confirmed_tx
+        }
+
+        return transaction_response(True, "Transaction successful", transaction_data)
+
+    except JSONRPCException as err:
+        return transaction_response(
+            False,
+            "RPC transaction error",
+            {"error": str(err)}
+        )
+
+
 def main():
-    print(" CS 216: Bitcoin Transaction Lab - Part 2: P2SH-SegWit (P2SH-P2WPKH)")
+    print("Part 2: P2SH-SegWit (P2SH-P2WPKH)")
     # Step-1 Connect RPC
     print("Connecting to Bitcoin Daemon")
     rpc = rpc_connection()
@@ -119,7 +198,12 @@ def main():
     else:
         print(fund_response.message)
     
-    # Step-4 
+    # Step-4 Create Transaction from A' to B'
+    transaction_1_response=create_transaction_A_to_B(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"])
+    if not transaction_1_response.success:
+        print(f"Error while creating transaction A to B: {transaction_1_response.message}")
+    else:
+        print(transaction_1_response.message)
     
 if __name__=="__main__" :
     main()
