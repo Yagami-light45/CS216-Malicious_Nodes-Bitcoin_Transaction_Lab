@@ -1,7 +1,51 @@
 {
-  "txid": "67c4465443aa158f348b2c1cce19840383d2c8b371fcad52a8500db43331af20",
+  "txid": "60f2d154c179929af447e75bf9bff8a742d3d2d85f6e63689ab71b7f34b16b53",
   "from": "Address B",
   "to": "Address C",
   "amount": 1.0,
-  "btcdeb_command": "btcdeb '[47304402200fa69610ce404c96c1b70580449a99f109da0969e0d86cdce43a0fbe0ebdce6502200634b238aa66de6f9a4de2c35ce48ab19be0d33b93936d07b5d8a5be15540480012102e74f07cdbc537f55b06a7dffd6ce9bf29ee5c59c69a6a95e5ba70fad3690ffbc]' '76a914c895bae57281e491ac4be0d5109d24ffb4b8eed488ac'"
+  "decoded_transaction": {
+    "txid": "60f2d154c179929af447e75bf9bff8a742d3d2d85f6e63689ab71b7f34b16b53",
+    "hash": "60f2d154c179929af447e75bf9bff8a742d3d2d85f6e63689ab71b7f34b16b53",
+    "version": 2,
+    "size": 225,
+    "vsize": 225,
+    "weight": 900,
+    "locktime": 0,
+    "vin": [
+      {
+        "txid": "67cb39496922a2b9b55246737281e67e5f6435a342606f1c56fa1bfef1d9457e",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "304402207181c7c5ad52d3507ca4ad21aba189db9c524a66c4276569a23bd9add5c96d3d0220487d4c5ee2ada611cc9c5d5d972c28b7344766323a5a0c68a52bfd6142199a0e[ALL] 02b8b7f8807138dd0816eb1d27dc3793a011cdfe8629aa2b3572176d71a6cf43aa",
+          "hex": "47304402207181c7c5ad52d3507ca4ad21aba189db9c524a66c4276569a23bd9add5c96d3d0220487d4c5ee2ada611cc9c5d5d972c28b7344766323a5a0c68a52bfd6142199a0e012102b8b7f8807138dd0816eb1d27dc3793a011cdfe8629aa2b3572176d71a6cf43aa"
+        },
+        "sequence": 4294967293
+      }
+    ],
+    "vout": [
+      {
+        "value": "1.00000000",
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 4c0143578c8abf185190f69ce2ad021b9a52a7b1 OP_EQUALVERIFY OP_CHECKSIG",
+          "desc": "addr(mnSqAPfxaW5DzZv8WwZYUpcZSirgewTdyc)#m0p8kl4y",
+          "hex": "76a9144c0143578c8abf185190f69ce2ad021b9a52a7b188ac",
+          "address": "mnSqAPfxaW5DzZv8WwZYUpcZSirgewTdyc",
+          "type": "pubkeyhash"
+        }
+      },
+      {
+        "value": "0.99990000",
+        "n": 1,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 f98b28971c12df2913599834c856965d6b78a023 OP_EQUALVERIFY OP_CHECKSIG",
+          "desc": "addr(n4GRFj3hSKCGKv6x9hRyfhV8k4zkpWV5Q9)#hhsyjmes",
+          "hex": "76a914f98b28971c12df2913599834c856965d6b78a02388ac",
+          "address": "n4GRFj3hSKCGKv6x9hRyfhV8k4zkpWV5Q9",
+          "type": "pubkeyhash"
+        }
+      }
+    ]
+  },
+  "btcdeb_command": "btcdeb '[47304402207181c7c5ad52d3507ca4ad21aba189db9c524a66c4276569a23bd9add5c96d3d0220487d4c5ee2ada611cc9c5d5d972c28b7344766323a5a0c68a52bfd6142199a0e012102b8b7f8807138dd0816eb1d27dc3793a011cdfe8629aa2b3572176d71a6cf43aa]' '76a914f98b28971c12df2913599834c856965d6b78a02388ac'"
 }

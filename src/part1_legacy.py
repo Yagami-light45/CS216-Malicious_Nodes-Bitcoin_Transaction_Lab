@@ -225,7 +225,11 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
     
     # Save to JSON file
     save_to_file({
-        "txid": txid_BC, "from": "Address B", "to": "Address C", "amount": amount_to_send,
+        "txid": txid_BC, 
+        "from": "Address B", 
+        "to": "Address C", 
+        "amount": amount_to_send,
+        "decoded_transaction": wallet_rpc.decoderawtransaction(signed_tx['hex']), # <-- This is the missing line!
         "btcdeb_command": btcdeb_cmd
     }, "transaction_B_to_C.json")
 
