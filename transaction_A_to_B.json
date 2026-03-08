@@ -1,0 +1,50 @@
+{
+  "txid": "3215032503481d2381d8ebfaf580325a510985baee37c702e419ff9c032b94f2",
+  "from": "Address A",
+  "to": "Address B",
+  "amount": 2.0,
+  "decoded_transaction": {
+    "txid": "3215032503481d2381d8ebfaf580325a510985baee37c702e419ff9c032b94f2",
+    "hash": "3215032503481d2381d8ebfaf580325a510985baee37c702e419ff9c032b94f2",
+    "version": 2,
+    "size": 225,
+    "vsize": 225,
+    "weight": 900,
+    "locktime": 0,
+    "vin": [
+      {
+        "txid": "dee80bdf9bc9d0e490b02940931d6dafc2e24fe383917766c0cf3c43ce3fd825",
+        "vout": 0,
+        "scriptSig": {
+          "asm": "304402207d8d1897093c9a3657a6a23d934f8914f2c367e7534418b1c7ac77f4b893202302202d408f8779a610dab2f6c1ef890280d5427c2ca0e2bfc0dacfa55a15f73824ff[ALL] 02adba589b50c2acecf4da59214477a908a113b22f5f7369f44b2a59bb08670dfb",
+          "hex": "47304402207d8d1897093c9a3657a6a23d934f8914f2c367e7534418b1c7ac77f4b893202302202d408f8779a610dab2f6c1ef890280d5427c2ca0e2bfc0dacfa55a15f73824ff012102adba589b50c2acecf4da59214477a908a113b22f5f7369f44b2a59bb08670dfb"
+        },
+        "sequence": 4294967293
+      }
+    ],
+    "vout": [
+      {
+        "value": "2.00000000",
+        "n": 0,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 62db5d74095a9cb42fa75f8385a32e7f5665903d OP_EQUALVERIFY OP_CHECKSIG",
+          "desc": "addr(mpXfJc1V6eWm1KjY4XCgrGRRQiKJ59qMyn)#ds6hh0sm",
+          "hex": "76a91462db5d74095a9cb42fa75f8385a32e7f5665903d88ac",
+          "address": "mpXfJc1V6eWm1KjY4XCgrGRRQiKJ59qMyn",
+          "type": "pubkeyhash"
+        }
+      },
+      {
+        "value": "2.99990000",
+        "n": 1,
+        "scriptPubKey": {
+          "asm": "OP_DUP OP_HASH160 566063cfe96e62fa53d514893248f8e4ff203e04 OP_EQUALVERIFY OP_CHECKSIG",
+          "desc": "addr(moPfsqawNpdnBrdqZ6jhcZZJmmkoD5szcG)#5wjgk96l",
+          "hex": "76a914566063cfe96e62fa53d514893248f8e4ff203e0488ac",
+          "address": "moPfsqawNpdnBrdqZ6jhcZZJmmkoD5szcG",
+          "type": "pubkeyhash"
+        }
+      }
+    ]
+  }
+}
