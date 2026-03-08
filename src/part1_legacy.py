@@ -60,6 +60,33 @@ def setup_wallet_and_addresses(rpc):
         
     return wallet_rpc, addr_A, addr_B, addr_C
 
+#Funding to A
+def fund_address_A(rpc, wallet_rpc, addr_A):
+    print_separator("PART 2: FUNDING ADDRESS A")
+    
+    balance = wallet_rpc.getbalance()
+    print(f"Starting wallet balance: {balance} BTC")
+    
+    if balance < 5.0:
+        print("\nInsufficient balance. Mining 101 blocks to generate mature funds...")
+        miner_addr = wallet_rpc.getnewaddress()
+        rpc.generatetoaddress(101, miner_addr)
+        balance = wallet_rpc.getbalance()
+        print(f"New wallet balance: {balance} BTC")
+        
+    print(f"\nSending 5.0 BTC to Address A ({addr_A})...")
+    txid_fund_A = wallet_rpc.sendtoaddress(addr_A, 5.0)
+    print(f"Funding TXID: {txid_fund_A}")
+    
+    print("\nMining 1 block to confirm the transaction...")
+    miner_addr = wallet_rpc.getnewaddress()
+    rpc.generatetoaddress(1, miner_addr)
+
+    tx_info = wallet_rpc.gettransaction(txid_fund_A)
+    print(f"Confirmations: {tx_info.get('confirmations', 0)}")
+    
+    return txid_fund_A
+
 def main():
     print("=" * 70 + "\n CS 216: Bitcoin Transaction Lab - Part 1: Legacy (P2PKH)\n" + "=" * 70)
     try:
@@ -69,7 +96,8 @@ def main():
         print(f"Connected to Bitcoin network: {b_info['chain']}\nCurrent block height: {b_info['blocks']}")
         
         wallet_rpc, address_A, address_B, address_C = setup_wallet_and_addresses(rpc)
-        
+            
+        txid_fund_A = fund_address_A(rpc, wallet_rpc, address_A)
     except JSONRPCException as e:
         print(f"\nRPC Error: {e}\nMake sure bitcoind is running in regtest mode with correct RPC credentials.")
     except Exception as e:
