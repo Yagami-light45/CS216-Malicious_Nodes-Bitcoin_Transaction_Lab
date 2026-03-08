@@ -1,0 +1,7 @@
+{
+  "txid": "67c4465443aa158f348b2c1cce19840383d2c8b371fcad52a8500db43331af20",
+  "from": "Address B",
+  "to": "Address C",
+  "amount": 1.0,
+  "btcdeb_command": "btcdeb '[47304402200fa69610ce404c96c1b70580449a99f109da0969e0d86cdce43a0fbe0ebdce6502200634b238aa66de6f9a4de2c35ce48ab19be0d33b93936d07b5d8a5be15540480012102e74f07cdbc537f55b06a7dffd6ce9bf29ee5c59c69a6a95e5ba70fad3690ffbc]' '76a914c895bae57281e491ac4be0d5109d24ffb4b8eed488ac'"
+}
