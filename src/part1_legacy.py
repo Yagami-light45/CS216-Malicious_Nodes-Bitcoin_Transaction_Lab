@@ -87,6 +87,65 @@ def fund_address_A(rpc, wallet_rpc, addr_A):
     
     return txid_fund_A
 
+def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
+    print_separator("PART 3: TRANSACTION A -> B (2.0 BTC)")
+    
+    # listunspent(minconf, maxconf, [addresses])
+    unspent_A_list = wallet_rpc.listunspent(1, 9999999, [addr_A])
+    
+    if not unspent_A_list:
+        print("Error: No confirmed UTXOs found for Address A. Did you mine a block after funding?")
+        return None
+        
+    utxo_A = unspent_A_list[0]
+    print_json(utxo_A, "Selected UTXO from Address A")
+    
+    amount_in = float(utxo_A['amount'])
+    amount_to_send = 2.0
+    fee = 0.0001
+    
+    change_A = round(amount_in - amount_to_send - fee, 8)
+    
+    print(f"\nMath:\n  Input:  {amount_in} BTC\n  Send:   {amount_to_send} BTC\n  Fee:    {fee} BTC\n  Change: {change_A} BTC (Back to Address A)")
+    #create tx
+    inputs = [{"txid": utxo_A['txid'], "vout": utxo_A['vout']}]
+    
+    outputs = {
+        addr_B: amount_to_send,
+        addr_A: change_A
+    }
+    
+    print("\nCreating raw transaction...")
+    raw_tx_hex = wallet_rpc.createrawtransaction(inputs, outputs)
+    
+    decoded_tx = wallet_rpc.decoderawtransaction(raw_tx_hex)
+    print_json(decoded_tx, "Decoded Unsigned Raw Transaction")
+
+    #Sign the Transaction
+    print("\nSigning transaction with wallet keys...")
+    signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx_hex)
+    
+    if not signed_tx['complete']:
+        print("Error: Signing failed!")
+        return None
+        
+    print("Signing successful!")
+
+    #Broadcast to the Network
+    print("\nBroadcasting transaction to Regtest network...")
+    txid_AB = wallet_rpc.sendrawtransaction(signed_tx['hex'])
+    print(f"Transaction ID (A -> B): {txid_AB}")
+    
+    print("\nMining 1 block to confirm the A -> B transaction...")
+    miner_addr = wallet_rpc.getnewaddress()
+    rpc.generatetoaddress(1, miner_addr)
+    
+    # Verify confirmation
+    tx_info = wallet_rpc.gettransaction(txid_AB)
+    print(f"Confirmations: {tx_info.get('confirmations', 0)}")
+    
+    return txid_AB
+
 def main():
     print("=" * 70 + "\n CS 216: Bitcoin Transaction Lab - Part 1: Legacy (P2PKH)\n" + "=" * 70)
     try:
@@ -96,8 +155,13 @@ def main():
         print(f"Connected to Bitcoin network: {b_info['chain']}\nCurrent block height: {b_info['blocks']}")
         
         wallet_rpc, address_A, address_B, address_C = setup_wallet_and_addresses(rpc)
-            
+        
         txid_fund_A = fund_address_A(rpc, wallet_rpc, address_A)
+        
+        # Transaction A -> B
+        if txid_fund_A:
+             txid_AB = create_tx_A_to_B(rpc, wallet_rpc, address_A, address_B)
+        
     except JSONRPCException as e:
         print(f"\nRPC Error: {e}\nMake sure bitcoind is running in regtest mode with correct RPC credentials.")
     except Exception as e:
