@@ -176,6 +176,15 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
     
     raw_tx_BC = wallet_rpc.createrawtransaction(inputs, outputs)
 
+    decoded_tx_BC = wallet_rpc.decoderawtransaction(raw_tx_BC)
+    print_json(decoded_tx_BC, "Decoded Unsigned Raw Transaction")
+
+    print("\n--- Locking Script (scriptPubKey) Analysis ---")
+    for vout in decoded_tx_BC['vout']:
+        spk = vout['scriptPubKey']
+        print(f"Output {vout['n']}:\n  Value: {vout['value']} BTC\n  ASM: {spk.get('asm', 'N/A')}\n  Hex: {spk.get('hex', 'N/A')}\n")
+
+
     # Sign
     signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx_BC)
     
