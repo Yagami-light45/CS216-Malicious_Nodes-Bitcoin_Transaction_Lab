@@ -101,20 +101,17 @@ class transaction_response:
         self.message = message
         self.data = data
 
-
-# Creating transaction from A to B
-def create_transaction_A_to_B(wallet_rpc, address_A, address_B) -> transaction_response:
+# Creating transaction
+def create_transaction(wallet_rpc, from_address, to_address, fee=0.0001) -> transaction_response:
     try:
-        utxos_A = wallet_rpc.listunspent(1, 9999999, [address_A])
+        utxos = wallet_rpc.listunspent(1, 9999999, [from_address])
 
-        if not utxos_A:
-            return transaction_response(False, "No UTXOs available for address A", {})
+        if not utxos:
+            return transaction_response(False, "No UTXOs available for source address", {})
 
-        utxo = utxos_A[0]
+        utxo = max(utxos, key=lambda x: x["amount"])
 
-        send_amount = 1.0
-        fee = 0.0001
-        change_amount = float(utxo["amount"]) - send_amount - fee
+        send_amount = round(float(utxo["amount"]) - fee, 8)
 
         inputs = [
             {
@@ -123,28 +120,24 @@ def create_transaction_A_to_B(wallet_rpc, address_A, address_B) -> transaction_r
             }
         ]
 
-        if change_amount > 0.0001:
-            outputs = {
-                address_B: send_amount,
-                address_A: round(change_amount, 8)
-            }
-        else:
-            outputs = {
-                address_B: send_amount
-            }
+        outputs = {
+            to_address: send_amount
+        }
 
         raw_tx = wallet_rpc.createrawtransaction(inputs, outputs)
 
-        decoded_tx = wallet_rpc.decoderawtransaction(raw_tx)
+        decoded_unsigned = wallet_rpc.decoderawtransaction(raw_tx)
 
         signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx)
 
         if not signed_tx or not signed_tx.get("complete", False):
             return transaction_response(False, "Transaction signing failed", {})
 
+        decoded_signed = wallet_rpc.decoderawtransaction(signed_tx["hex"])
+
         txid = wallet_rpc.sendrawtransaction(signed_tx["hex"])
 
-        wallet_rpc.generatetoaddress(1, address_A)
+        wallet_rpc.generatetoaddress(1, from_address)
 
         try:
             confirmed_tx = wallet_rpc.getrawtransaction(txid, True)
@@ -154,24 +147,39 @@ def create_transaction_A_to_B(wallet_rpc, address_A, address_B) -> transaction_r
 
         transaction_data = {
             "txid": txid,
-            "from": address_A,
-            "to": address_B,
+            "from": from_address,
+            "to": to_address,
             "amount": send_amount,
-            "fee": fee,
-            "unsigned_tx": decoded_tx,
-            "signed_tx": signed_tx,
+            "unsigned_tx": decoded_unsigned,
+            "signed_tx": decoded_signed,
             "confirmed_tx": confirmed_tx
         }
 
         return transaction_response(True, "Transaction successful", transaction_data)
 
     except JSONRPCException as err:
-        return transaction_response(
-            False,
-            "RPC transaction error",
-            {"error": str(err)}
-        )
+        return transaction_response(False, "RPC transaction error", {"error": str(err)})
 
+# Extranction of decoded part
+def extract_script_data(decoded_tx):
+    vin = decoded_tx["vin"][0]
+
+    script_sig = vin.get("scriptSig", {})
+    witness = vin.get("txinwitness", [])
+
+    vout = decoded_tx["vout"]
+
+    script_pubkeys = []
+    for out in vout:
+        script_pubkeys.append(out["scriptPubKey"])
+
+    script_data = {
+        "scriptSig": script_sig,
+        "witness": witness,
+        "scriptPubKeys": script_pubkeys
+    }
+
+    return script_data
 
 def main():
     print("Part 2: P2SH-SegWit (P2SH-P2WPKH)")
@@ -187,6 +195,7 @@ def main():
     setup_response=setup_wallet_addresses(rpc)
     if not setup_response.success:
         print(f"Failure while setup: {setup_response.message}")
+        print("Exiting cause of error in execution")
         return
     else:
         print(setup_response.message)
@@ -195,15 +204,29 @@ def main():
     fund_response=fund_wallet(setup_response.data["wallet"], setup_response.data["address_A"])
     if not fund_response.success:
         print(f"Funding error: {fund_response.message}")
+        print("Exiting cause of error in execution")
+        return
     else:
         print(fund_response.message)
     
     # Step-4 Create Transaction from A' to B'
-    transaction_1_response=create_transaction_A_to_B(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"])
+    transaction_1_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"])
     if not transaction_1_response.success:
         print(f"Error while creating transaction A to B: {transaction_1_response.message}")
+        print("Exiting cause of error in execution")
+        return
     else:
         print(transaction_1_response.message)
+    
+    # Step-5 Create Transaction from B' to C'
+    transaction_2_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_B"],setup_response.data["address_C"])
+    if not transaction_2_response.success:
+        print(f"Error wwhile creating transaction from B to C: {transaction_2_response.message}")
+        print("Exiting cause of error")
+        return
+    else:
+        print(transaction_2_response.message)
+    
     
 if __name__=="__main__" :
     main()
