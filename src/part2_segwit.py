@@ -264,7 +264,7 @@ def main():
         print(fund_response.message)
     
     # Step-4 Create Transaction from A' to B'
-    transaction_1_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"],1)
+    transaction_1_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"], dir=1)
     if not transaction_1_response.success:
         print(f"Error while creating transaction A to B: {transaction_1_response.message}")
         print("Exiting cause of error in execution")
@@ -273,7 +273,7 @@ def main():
         print(transaction_1_response.message)
     
     # Step-5 Create Transaction from B' to C'
-    transaction_2_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_B"],setup_response.data["address_C"],2)
+    transaction_2_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_B"],setup_response.data["address_C"], dir=2)
     if not transaction_2_response.success:
         print(f"Error while creating transaction from B to C: {transaction_2_response.message}")
         print("Exiting cause of error")
