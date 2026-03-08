@@ -6,11 +6,12 @@ RPC_USER = "harshith"
 RPC_PASSWORD = "iitindore"  
 RPC_HOST = "127.0.0.1"
 RPC_PORT = 18443              
-#connect to bitcoin daemon
+
+# connect to bitcoin daemon
 def get_rpc_connection():       
     return AuthServiceProxy(f"http://{RPC_USER}:{RPC_PASSWORD}@{RPC_HOST}:{RPC_PORT}")
 
-#fns for formatting
+# fns for formatting
 def print_separator(title):
     print(f"\n{'=' * 70}\n {title}\n{'=' * 70}")
 
@@ -18,15 +19,13 @@ def print_json(data, title=""):
     if title: print(f"\n{title}:")
     print(json.dumps(data, indent=2, default=str))
 
-#fn to save data to a json
+# fn to save data to a json
 def save_to_file(data, filename):
     with open(filename, 'w') as f:
         json.dump(data, f, indent=2, default=str)
     print(f"Data saved to {filename}")
 
-
-#Setup Wallet and Address Generation
-
+# Setup Wallet and Address Generation
 def setup_wallet_and_addresses(rpc):
     print_separator("PART 1: SETUP - Wallet and Address Generation")
     wallet_name = "lab"
@@ -60,7 +59,7 @@ def setup_wallet_and_addresses(rpc):
         
     return wallet_rpc, addr_A, addr_B, addr_C
 
-#Funding to A
+# Funding to A
 def fund_address_A(rpc, wallet_rpc, addr_A):
     print_separator("PART 2: FUNDING ADDRESS A")
     
@@ -107,7 +106,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
     change_A = round(amount_in - amount_to_send - fee, 8)
     
     print(f"\nMath:\n  Input:  {amount_in} BTC\n  Send:   {amount_to_send} BTC\n  Fee:    {fee} BTC\n  Change: {change_A} BTC (Back to Address A)")
-    #create tx
+    # create tx
     inputs = [{"txid": utxo_A['txid'], "vout": utxo_A['vout']}]
     
     outputs = {
@@ -121,7 +120,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
     decoded_tx = wallet_rpc.decoderawtransaction(raw_tx_hex)
     print_json(decoded_tx, "Decoded Unsigned Raw Transaction")
 
-    #Sign the Transaction
+    # Sign the Transaction
     print("\nSigning transaction with wallet keys...")
     signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx_hex)
     
@@ -131,7 +130,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
         
     print("Signing successful!")
 
-    #Broadcast to the Network
+    # Broadcast to the Network
     print("\nBroadcasting transaction to Regtest network...")
     txid_AB = wallet_rpc.sendrawtransaction(signed_tx['hex'])
     print(f"Transaction ID (A -> B): {txid_AB}")
@@ -146,7 +145,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
     
     return txid_AB
 
-#tx B -> C
+# tx B -> C
 def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
     print_separator("PART 4: TRANSACTION B -> C (1.0 BTC) & SCRIPT EXTRACTION")
     
@@ -182,9 +181,11 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
 
     print_separator(" SCRIPT EXTRACTION")
 
-    prev_tx = wallet_rpc.getrawtransaction(txid_AB, True)
+    prev_tx_info = wallet_rpc.gettransaction(txid_AB)
+    prev_tx_decoded = wallet_rpc.decoderawtransaction(prev_tx_info['hex'])
+    
     vout_index = utxo_B['vout']
-    script_pub_key = prev_tx['vout'][vout_index]['scriptPubKey']['hex']
+    script_pub_key = prev_tx_decoded['vout'][vout_index]['scriptPubKey']['hex']
     
     decoded_signed_BC = wallet_rpc.decoderawtransaction(signed_tx['hex'])
     script_sig = decoded_signed_BC['vin'][0]['scriptSig']['hex']
@@ -213,17 +214,20 @@ def main():
         b_info = rpc.getblockchaininfo()
         print(f"Connected to Bitcoin network: {b_info['chain']}\nCurrent block height: {b_info['blocks']}")
         
+        # Setup
         wallet_rpc, address_A, address_B, address_C = setup_wallet_and_addresses(rpc)
-        #funding A
+        
+        # funding A
         txid_fund_A = fund_address_A(rpc, wallet_rpc, address_A)
         
         # Transaction A -> B
         if txid_fund_A:
              txid_AB = create_tx_A_to_B(rpc, wallet_rpc, address_A, address_B)
+             
              # transaction B -> C
              if txid_AB:
                  txid_BC = create_tx_B_to_C(rpc, wallet_rpc, address_B, address_C, txid_AB)
-        
+                 
     except JSONRPCException as e:
         print(f"\nRPC Error: {e}\nMake sure bitcoind is running in regtest mode with correct RPC credentials.")
     except Exception as e:
