@@ -3,6 +3,7 @@
 from bitcoinrpc.authproxy import AuthServiceProxy, JSONRPCException
 import json
 
+
 # Configuration for RPC Connection
 
 RPC_USER="varshith"
@@ -32,7 +33,7 @@ class setup_response:
 # Setup function for wallets and addresses
 def setup_wallet_addresses(rpc)-> setup_response:
     print("Setting up wallet and addresses")
-    wallet_name = "part-2"
+    wallet_name = "lab"
 
     try:
         loaded_wallets = rpc.listwallets()
