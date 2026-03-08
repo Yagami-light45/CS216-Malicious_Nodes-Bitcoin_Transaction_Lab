@@ -109,7 +109,7 @@ class transaction_response:
         self.data = data
 
 # Creating transaction
-def create_transaction(wallet_rpc, from_address, to_address, fee=0.0001) -> transaction_response:
+def create_transaction(wallet_rpc, from_address, to_address, fee=0.0001, dir=1) -> transaction_response:
     try:
         utxos = wallet_rpc.listunspent(1, 9999999, [from_address])
 
@@ -165,7 +165,12 @@ def create_transaction(wallet_rpc, from_address, to_address, fee=0.0001) -> tran
             "vsize": confirmed_tx.get("vsize", 0),
             "weight": confirmed_tx.get("weight", 0)
         }
-        save_to_file(transaction_data, f"transaction_{from_address[:6]}_{to_address[:6]}.json")
+        s=""
+        if dir==1:
+            s="A_B"
+        else:
+            s="B_C"
+        save_to_file(transaction_data, f"part_2_transaction_{s}.json")
         return transaction_response(True, "Transaction successful", transaction_data)
 
     except JSONRPCException as err:
@@ -259,7 +264,7 @@ def main():
         print(fund_response.message)
     
     # Step-4 Create Transaction from A' to B'
-    transaction_1_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"])
+    transaction_1_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_A"], setup_response.data["address_B"],1)
     if not transaction_1_response.success:
         print(f"Error while creating transaction A to B: {transaction_1_response.message}")
         print("Exiting cause of error in execution")
@@ -268,7 +273,7 @@ def main():
         print(transaction_1_response.message)
     
     # Step-5 Create Transaction from B' to C'
-    transaction_2_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_B"],setup_response.data["address_C"])
+    transaction_2_response=create_transaction(setup_response.data["wallet"], setup_response.data["address_B"],setup_response.data["address_C"],2)
     if not transaction_2_response.success:
         print(f"Error while creating transaction from B to C: {transaction_2_response.message}")
         print("Exiting cause of error")
