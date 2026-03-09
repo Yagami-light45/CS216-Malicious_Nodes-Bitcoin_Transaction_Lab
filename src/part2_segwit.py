@@ -141,30 +141,34 @@ def extract_script_data(decoded_tx):
 
 def generate_btcdeb_commands(wallet_rpc, tx1_data, tx2_data):
 
-    print("\nGenerating btcdeb command")
+    print("\nGenerating btcdeb stack-trace command")
 
-    tx1_txid = tx1_data["txid"]
-    tx2_txid = tx2_data["txid"]
+    witness = tx2_data["script_analysis"]["witness"]
+    script_pubkey = tx1_data["script_analysis"]["scriptPubKeys"][0]["hex"]
 
-    prev_tx_hex = wallet_rpc.gettransaction(tx1_txid)["hex"]
-    spend_tx_hex = wallet_rpc.gettransaction(tx2_txid)["hex"]
+    signature = witness[0]
+    pubkey = witness[1]
 
-    # btcdeb command
-    command = f"btcdeb --verbose --tx={spend_tx_hex} --txin={prev_tx_hex}"
+    # convert P2PKH style script for debugger
+    # OP_DUP OP_HASH160 <pubkeyhash> OP_EQUALVERIFY OP_CHECKSIG
+    pubkey_hash = script_pubkey[6:-4]
 
-    print("\nRun this command for btcdeb debugging:\n")
+    script = f"{pubkey_hash}"
+
+    command = f"btcdeb '[{signature} {pubkey}]' '{script}'"
+
+    print("\nRun this command for btcdeb stack trace:\n")
     print(command)
 
     btcdeb_data = {
-        "spending_txid": tx2_txid,
-        "input_txid": tx1_txid,
-        "spending_tx_hex": spend_tx_hex,
-        "input_tx_hex": prev_tx_hex,
+        "signature": signature,
+        "pubkey": pubkey,
+        "script": script,
         "command": command
     }
 
     save_to_file(btcdeb_data, "btcdeb_commands_segwit.json")
-
+    
 def main():
 
     print("SegWit P2SH-P2WPKH Transactions")
