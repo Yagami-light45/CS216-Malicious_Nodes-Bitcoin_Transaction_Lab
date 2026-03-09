@@ -139,39 +139,31 @@ def extract_script_data(decoded_tx):
     }
 
 
-def generate_btcdeb_commands(tx1,tx2):
+def generate_btcdeb_commands(wallet_rpc, tx1_data, tx2_data):
 
-    txid=tx2["txid"]
-    input_txid=tx1["txid"]
+    print("\nGenerating btcdeb command")
 
-    script_analysis=tx2["script_analysis"]
+    tx1_txid = tx1_data["txid"]
+    tx2_txid = tx2_data["txid"]
 
-    script_sig=script_analysis["scriptSig"]
-    witness=script_analysis["witness"]
+    prev_tx_hex = wallet_rpc.gettransaction(tx1_txid)["hex"]
+    spend_tx_hex = wallet_rpc.gettransaction(tx2_txid)["hex"]
 
-    print("\nBTCDEB COMMAND")
+    # btcdeb command
+    command = f"btcdeb --verbose --tx={spend_tx_hex} --txin={prev_tx_hex}"
 
-    print(f"scriptSig ASM: {script_sig.get('asm','N/A')}")
-
-    print("Witness:")
-
-    for i,w in enumerate(witness):
-        print(f"{i}: {w}")
-
-    command=f"btcdeb --tx={txid}:0 --txin={input_txid}"
-
+    print("\nRun this command for btcdeb debugging:\n")
     print(command)
 
-    btcdeb_data={
-        "txid":txid,
-        "input_txid":input_txid,
-        "script_sig":script_sig,
-        "witness":witness,
-        "command":command
+    btcdeb_data = {
+        "spending_txid": tx2_txid,
+        "input_txid": tx1_txid,
+        "spending_tx_hex": spend_tx_hex,
+        "input_tx_hex": prev_tx_hex,
+        "command": command
     }
 
-    save_to_file(btcdeb_data,"btcdeb_commands_segwit.json")
-
+    save_to_file(btcdeb_data, "btcdeb_commands_segwit.json")
 
 def main():
 
@@ -223,7 +215,11 @@ def main():
 
     print("TXID:",tx2["txid"])
 
-    generate_btcdeb_commands(tx1,tx2)
+    generate_btcdeb_commands(
+        wallet_rpc,
+        tx1,
+        tx2
+    )
 
     print("\nTransaction Sizes")
 
