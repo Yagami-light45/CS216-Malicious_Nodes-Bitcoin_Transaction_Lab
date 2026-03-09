@@ -43,7 +43,7 @@ def setup_wallet_addresses(rpc)-> setup_response:
                 rpc.loadwallet(wallet_name)
             except JSONRPCException:
                 try:
-                    rpc.createwallet(wallet_name, False, False, "", False, False)
+                    rpc.createwallet(wallet_name, False, False, "", True, False)
                 except JSONRPCException as create_err:
                     return setup_response(False, f"Cannot create wallet: {create_err}", {})
 
