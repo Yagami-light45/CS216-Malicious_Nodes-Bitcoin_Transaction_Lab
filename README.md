@@ -177,7 +177,7 @@ OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
 **Key Differences:**
 - Signature data moved to **witness** field (not in scriptSig)
 - Smaller transaction **virtual size** (vsize) = lower fees
-- **Weight** calculation: `weight = 4 × base_size + total_size`
+- **Weight** calculation: `Weight = (non-witness bytes x 4) + (witness bytes x 1)`
 
 **Script Structure:**
 - `scriptSig`: Contains only the redeem script push
@@ -210,9 +210,9 @@ cd btcdeb
 
 | Metric | Legacy (P2PKH) | SegWit (P2SH-P2WPKH) |
 |--------|---------------|---------------------|
-| Size | ~226 bytes | ~247 bytes |
-| Virtual Size | ~226 vbytes | ~166 vbytes |
-| Weight | ~904 WU | ~661 WU |
+| Size | ~225 bytes | ~247 bytes |
+| Virtual Size | ~225 vbytes | ~166 vbytes |
+| Weight | ~900 WU | ~661 WU |
 
 > SegWit transactions have lower **virtual size** despite larger raw size, resulting in lower transaction fees.
 
