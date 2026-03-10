@@ -212,7 +212,7 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
     
     print("Run this exact command in your terminal to debug the stack:")
 
-    btcdeb_cmd = f"btcdeb '[{script_sig}]' '{script_pub_key}'"
+    btcdeb_cmd = f"btcdeb '{script_sig}{script_pub_key}'"
     print(btcdeb_cmd)
     print("=" * 70)
 
@@ -229,7 +229,7 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
         "from": "Address B", 
         "to": "Address C", 
         "amount": amount_to_send,
-        "decoded_transaction": wallet_rpc.decoderawtransaction(signed_tx['hex']), # <-- This is the missing line!
+        "decoded_transaction": wallet_rpc.decoderawtransaction(signed_tx['hex']),
         "btcdeb_command": btcdeb_cmd
     }, "transaction_B_to_C.json")
 
