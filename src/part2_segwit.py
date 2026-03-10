@@ -7,17 +7,17 @@ RPC_PASSWORD="varshith@CS216"
 RPC_HOST="127.0.0.1"
 RPC_PORT=18443
 
-
+# Helper file
 def save_to_file(data, filename):
     with open(filename,"w") as f:
         json.dump(data,f,indent=2,default=str)
 
-
+# RPC connection
 def rpc_connection():
     rpc_url=f"http://{RPC_USER}:{RPC_PASSWORD}@{RPC_HOST}:{RPC_PORT}"
     return AuthServiceProxy(rpc_url)
 
-
+# Wallet setup function
 def setup_wallet_addresses(rpc):
 
     wallet_name="lab"
@@ -40,14 +40,14 @@ def setup_wallet_addresses(rpc):
 
     return wallet_rpc,address_A,address_B,address_C
 
-
+# Mine function
 def mine_blocks(wallet_rpc,num,address):
 
     blocks=wallet_rpc.generatetoaddress(num,address)
 
     return blocks
 
-
+# Selection function
 def select_utxo(wallet_rpc,address,required_amount):
 
     utxos=wallet_rpc.listunspent(1,9999999,[address])
