@@ -119,51 +119,53 @@ def create_and_send_raw_tx(wallet_rpc,from_address,to_address,send_amount):
 
     return tx_data
 
-
 def extract_script_data(decoded_tx):
+    vin = decoded_tx["vin"][0]
+    
+    script_sig = vin.get("scriptSig", {})
+    witness = vin.get("txinwitness", [])
 
-    vin=decoded_tx["vin"][0]
-
-    script_sig=vin.get("scriptSig",{})
-    witness=vin.get("txinwitness",[])
-
-    script_pubkeys=[]
-
+    script_pubkeys = []
     for vout in decoded_tx["vout"]:
-        script_pubkeys.append(vout["scriptPubKey"])
+        spk = vout["scriptPubKey"]
+        script_pubkeys.append({
+            "asm": spk.get("asm"),
+            "type": spk.get("type"),
+            "hex": spk.get("hex") 
+        })
 
     return {
-        "scriptSig":script_sig,
-        "witness":witness,
-        "scriptPubKeys":script_pubkeys
+        "scriptSig_asm": script_sig.get("asm"),
+        "scriptSig_hex": script_sig.get("hex"),
+        "witness": witness,
+        "scriptPubKeys": script_pubkeys
     }
 
-
 def generate_btcdeb_commands(wallet_rpc, tx1_data, tx2_data):
-
     print("\nGenerating btcdeb stack-trace command")
 
     witness = tx2_data["script_analysis"]["witness"]
-    script_pubkey = tx1_data["script_analysis"]["scriptPubKeys"][0]["hex"]
+  
+    script_sig_hex = tx2_data["script_analysis"]["scriptSig_hex"]
+    
+    pubkey_hash = script_sig_hex[-40:]
 
     signature = witness[0]
     pubkey = witness[1]
-
-    # convert P2PKH style script for debugger
-    # OP_DUP OP_HASH160 <pubkeyhash> OP_EQUALVERIFY OP_CHECKSIG
-    pubkey_hash = script_pubkey[6:-4]
-
-    script = f"{pubkey_hash}"
+    print("\nWitness Stack:")
+    print("Signature:", signature)
+    print("Public Key:", pubkey)
+    script = f"OP_DUP OP_HASH160 {pubkey_hash} OP_EQUALVERIFY OP_CHECKSIG"
 
     command = f"btcdeb '[{signature} {pubkey}]' '{script}'"
 
-    print("\nRun this command for btcdeb stack trace:\n")
+    print("\nRun this command for btcdeb debugging:\n")
     print(command)
 
     btcdeb_data = {
         "signature": signature,
         "pubkey": pubkey,
-        "script": script,
+        "implicit_segwit_script": script,
         "command": command
     }
 
