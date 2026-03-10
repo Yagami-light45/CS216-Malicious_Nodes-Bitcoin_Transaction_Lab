@@ -27,7 +27,6 @@ Both parts follow the same transaction flow:
 ```
 Address A  ──(2 BTC)──►  Address B  ──(1 BTC)──►  Address C
 ```
-
 ---
 
 ## Prerequisites
@@ -56,7 +55,6 @@ Address A  ──(2 BTC)──►  Address B  ──(1 BTC)──►  Address C
    cp config/bitcoin.conf ~/.bitcoin/bitcoin.conf
    # Or start bitcoind with: bitcoind -conf=config/bitcoin.conf
    ```
-
 ---
 
 ## Configuration
@@ -104,7 +102,6 @@ bitcoind -regtest -daemon
 ```bash
 python src/part1_legacy.py
 ```
-
 **What it does:**
 1. Creates/loads a wallet named `lab`
 2. Generates three legacy addresses (A, B, C)
@@ -155,7 +152,6 @@ CS216-Malicious_Nodes-Bitcoin_Transaction_Lab/
 ├── requirements.txt              # Python dependencies
 └── README.md
 ```
-
 ---
 
 ## Key Concepts

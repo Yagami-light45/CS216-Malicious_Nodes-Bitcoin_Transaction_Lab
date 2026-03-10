@@ -11,7 +11,7 @@ RPC_PORT = 18443
 def get_rpc_connection():       
     return AuthServiceProxy(f"http://{RPC_USER}:{RPC_PASSWORD}@{RPC_HOST}:{RPC_PORT}")
 
-# fns for formatting
+# Formatting helpers.
 def print_separator(title):
     print(f"\n{'=' * 70}\n {title}\n{'=' * 70}")
 
@@ -131,7 +131,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
         
     print("Signing successful!")
 
-    # Broadcast to the Network
+    # Broadcast to the regtest network.
     print("\nBroadcasting transaction to Regtest network...")
     txid_AB = wallet_rpc.sendrawtransaction(signed_tx['hex'])
     print(f"Transaction ID (A -> B): {txid_AB}")
@@ -151,7 +151,7 @@ def create_tx_A_to_B(rpc, wallet_rpc, addr_A, addr_B):
 
     return txid_AB
 
-# tx B -> C
+# Transaction B -> C.
 def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
     print_separator("PART 4: TRANSACTION B -> C (1.0 BTC) & SCRIPT EXTRACTION")
     
@@ -185,7 +185,7 @@ def create_tx_B_to_C(rpc, wallet_rpc, addr_B, addr_C, txid_AB):
         print(f"Output {vout['n']}:\n  Value: {vout['value']} BTC\n  ASM: {spk.get('asm', 'N/A')}\n  Hex: {spk.get('hex', 'N/A')}\n")
 
 
-    # Sign
+    # Sign the transaction with wallet keys.
     signed_tx = wallet_rpc.signrawtransactionwithwallet(raw_tx_BC)
     
     if not signed_tx['complete']:
