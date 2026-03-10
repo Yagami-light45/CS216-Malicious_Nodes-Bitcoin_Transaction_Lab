@@ -1,6 +1,218 @@
-CS216 - ASSN2 
-Members : 
-Harshith
-Varshith
-Sujith
-Trijal
+# Bitcoin Transaction Using Bitcoind
+
+**CS-216: Introduction to Blockchain**
+
+## Team: Malicious Nodes
+
+| Name | Roll Number |
+|------|-------------|
+| S Varshith Reddy | 240001071 |
+| Harshith Pasupuleti | 240003034 |
+| Trijal Mathuria | 240001073 |
+| D Sujith Reddy | 240001028 |
+
+
+A hands-on lab exploring Bitcoin transaction mechanics using Legacy (P2PKH) and SegWit (P2SH-P2WPKH) transaction formats on Bitcoin's regtest network.
+
+## Overview
+
+This lab demonstrates the fundamentals of Bitcoin transactions by implementing two transaction workflows:
+
+| Part | Transaction Type | Address Format | Description |
+|------|-----------------|----------------|-------------|
+| **Part 1** | Legacy (P2PKH) | `m...` / `n...` | Pay-to-Public-Key-Hash transactions |
+| **Part 2** | SegWit (P2SH-P2WPKH) | `2...` | Segregated Witness wrapped in P2SH |
+
+Both parts follow the same transaction flow:
+```
+Address A  ──(2 BTC)──►  Address B  ──(1 BTC)──►  Address C
+```
+
+---
+
+## Prerequisites
+
+### Software Requirements
+
+- **Bitcoin Core** (with `bitcoind` daemon)
+- **Python 3.7+**
+- **btcdeb** (optional, for script debugging)
+
+### Installation
+
+1. Clone this repository:
+   ```bash
+   git clone <repository-url>
+   cd CS216-Malicious_Nodes-Bitcoin_Transaction_Lab
+   ```
+
+2. Install Python dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Configure Bitcoin daemon using the provided config:
+   ```bash
+   cp config/bitcoin.conf ~/.bitcoin/bitcoin.conf
+   # Or start bitcoind with: bitcoind -conf=config/bitcoin.conf
+   ```
+
+---
+
+## Configuration
+
+### Bitcoin Core Settings (`config/bitcoin.conf`)
+
+```ini
+regtest=1              # Use regression test network
+server=1               # Enable JSON-RPC server
+rest=1                 # Enable REST interface
+rpcuser=<username>     # RPC authentication
+rpcpassword=<password>
+
+# Fee Settings
+paytxfee=0.0001
+fallbackfee=0.0002
+mintxfee=0.00001
+txconfirmtarget=6
+```
+
+### RPC Credentials
+
+Update the credentials in the Python scripts to match your `bitcoin.conf`:
+
+```python
+# src/part1_legacy.py
+RPC_USER = "your_username"
+RPC_PASSWORD = "your_password"
+RPC_HOST = "127.0.0.1"
+RPC_PORT = 18443  # Default regtest RPC port
+```
+
+---
+
+## Usage
+
+### Start Bitcoin Daemon
+
+```bash
+bitcoind -regtest -daemon
+```
+
+### Run Part 1: Legacy Transactions (P2PKH)
+
+```bash
+python src/part1_legacy.py
+```
+
+**What it does:**
+1. Creates/loads a wallet named `lab`
+2. Generates three legacy addresses (A, B, C)
+3. Mines 101 blocks to fund Address A
+4. Creates and broadcasts transaction A → B (2 BTC)
+5. Creates and broadcasts transaction B → C (1 BTC)
+6. Extracts and displays scriptPubKey and scriptSig
+7. Generates btcdeb command for stack debugging
+
+**Output files:**
+- `transaction_A_to_B.json` - Decoded transaction data
+- `transaction_B_to_C.json` - Decoded transaction with btcdeb command
+
+### Run Part 2: SegWit Transactions (P2SH-P2WPKH)
+
+```bash
+python src/part2_segwit.py
+```
+
+**What it does:**
+1. Creates/loads a wallet named `lab`
+2. Generates three P2SH-SegWit addresses (A, B, C)
+3. Mines 101 blocks to fund Address A
+4. Creates and broadcasts transaction A → B (2 BTC)
+5. Creates and broadcasts transaction B → C (1 BTC)
+6. Extracts witness data (signature + pubkey)
+7. Reports transaction size, virtual size, and weight metrics
+
+**Output files:**
+- `part_2_transaction_A_B.json` - Decoded SegWit transaction data
+- `part_2_transaction_B_C.json` - Decoded SegWit transaction data
+- `btcdeb_commands_segwit.json` - Script debugging commands
+
+---
+
+## Project Structure
+
+```
+CS216-Malicious_Nodes-Bitcoin_Transaction_Lab/
+├── config/
+│   └── bitcoin.conf              # Bitcoin daemon configuration
+├── src/
+│   ├── part1_legacy.py           # Legacy P2PKH transaction script
+│   └── part2_segwit.py           # SegWit P2SH-P2WPKH transaction script
+├── transaction_A_to_B.json       # Part 1 output: A→B transaction
+├── transaction_B_to_C.json       # Part 1 output: B→C transaction
+├── part_2_transaction_A_B.json   # Part 2 output: A→B transaction
+├── part_2_transaction_B_C.json   # Part 2 output: B→C transaction
+├── btcdeb_commands_segwit.json   # Part 2 output: btcdeb commands
+├── requirements.txt              # Python dependencies
+└── README.md
+```
+
+---
+
+## Key Concepts
+
+### Legacy Transactions (P2PKH)
+
+**Locking Script (scriptPubKey):**
+```
+OP_DUP OP_HASH160 <pubKeyHash> OP_EQUALVERIFY OP_CHECKSIG
+```
+
+**Unlocking Script (scriptSig):**
+```
+<signature> <pubKey>
+```
+
+### SegWit Transactions (P2SH-P2WPKH)
+
+**Key Differences:**
+- Signature data moved to **witness** field (not in scriptSig)
+- Smaller transaction **virtual size** (vsize) = lower fees
+- **Weight** calculation: `weight = 3 × base_size + total_size`
+
+**Script Structure:**
+- `scriptSig`: Contains only the redeem script push
+- `witness`: `[<signature>, <pubkey>]`
+
+---
+
+## Script Debugging with btcdeb
+
+The scripts generate btcdeb commands for step-by-step script execution analysis:
+
+```bash
+# Example from Part 1 output
+btcdeb '[<scriptSig_hex>]' '<scriptPubKey_hex>'
+```
+
+Install btcdeb:
+```bash
+git clone https://github.com/bitcoin-core/btcdeb.git
+cd btcdeb
+./autogen.sh && ./configure && make && sudo make install
+```
+
+---
+
+## Transaction Size Comparison
+
+| Metric | Legacy (P2PKH) | SegWit (P2SH-P2WPKH) |
+|--------|---------------|---------------------|
+| Size | ~226 bytes | ~247 bytes |
+| Virtual Size | ~226 vbytes | ~166 vbytes |
+| Weight | ~904 WU | ~661 WU |
+
+> SegWit transactions have lower **virtual size** despite larger raw size, resulting in lower transaction fees.
+
+---
